@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS-CRM: Intelligent Governance Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0f172a',
+                        primary: '#38bdf8', /* Blue */
+                        success: '#10b981', /* Green */
+                        surface: '#1e293b',
+                        surfaceLight: '#334155'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-slate-300 font-sans h-screen overflow-hidden flex flex-col md:flex-row antialiased">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside
+        class="w-full md:w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col shrink-0 relative z-10 glass-panel">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <i data-lucide="shield-check" class="text-primary w-6 h-6 mr-3"></i>
+            <h2 class="text-lg font-bold text-white tracking-wide">PS-CRM</h2>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1" id="sidebar-nav">
+            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Navigation</p>
+            <a href="#" data-target="tab-heatmap"
+                class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-white bg-slate-800 hover:text-white hover:bg-slate-700 group active">
+                <i data-lucide="map" class="w-5 h-5 mr-3 text-primary group-hover:text-primary"></i>
+                Global Heatmap
+            </a>
+            <a href="#" data-target="tab-ai-feed"
+                class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 group">
+                <i data-lucide="activity" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-primary"></i>
+                AI Classification Feed
+            </a>
+            <a href="#" data-target="tab-sla"
+                class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 group">
+                <i data-lucide="clock" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-primary"></i>
+                SLA Monitor
+            </a>
+            <a href="#" data-target="tab-performance" id="nav-dept-performance"
+                class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 group">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-primary"></i>
+                Department Performance
+            </a>
+        </nav>
+
+        <!-- Accountability Feed Snippet in Sidebar -->
+        <div class="p-4 border-t border-slate-800">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Accountability Feed</h3>
+            <div id="accountability-feed-sidebar"
+                class="space-y-3 relative before:absolute before:inset-y-0 before:left-2 before:w-px before:bg-slate-800">
+                <!-- Javascript will populate -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+
+        <!-- Top Header -->
+        <header
+            class="h-20 lg:h-16 flex flex-col lg:flex-row items-center justify-between px-6 bg-surface/50 border-b border-slate-800 backdrop-blur-md shrink-0">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-white">PS-CRM: Intelligent Governance Platform</h1>
+                    <p class="text-xs text-primary font-medium tracking-wide">Automating the entire grievance lifecycle
+                        from filing to resolution</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6 mt-2 lg:mt-0">
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Annual Grievances</span>
+                    <span class="text-sm font-bold text-white flex items-center gap-1.5"><i data-lucide="folder-kanban"
+                            class="w-4 h-4 text-primary"></i> 70 Lakh+</span>
+                </div>
+                <div class="w-px h-8 bg-slate-700"></div>
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Avg. Resolution</span>
+                    <span class="text-sm font-bold text-success flex items-center gap-1.5"><i data-lucide="zap"
+                            class="w-4 h-4 text-success"></i> 1.2 Days</span>
+                </div>
+                <div class="w-px h-8 bg-slate-700"></div>
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Duplicates Merged</span>
+                    <span class="text-sm font-bold text-primary flex items-center gap-1.5"><i data-lucide="git-merge"
+                            class="w-4 h-4 text-primary"></i> 1,104</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Workspace -->
+        <div class="flex-1 relative overflow-hidden" id="main-content-area">
+
+            <!-- TAB: Global Heatmap (Default Main View) -->
+            <div id="tab-heatmap"
+                class="tab-pane absolute inset-0 overflow-y-auto overflow-x-hidden p-6 transition-opacity duration-300 opacity-100 z-10">
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 h-full min-h-[600px] pb-6 xl:pb-0">
+
+                    <!-- Left/Center Region (Layer 2 & Map) -->
+                    <div class="col-span-1 xl:col-span-3 flex flex-col gap-6">
+
+                        <div class="flex-1 flex flex-col xl:flex-row gap-6 min-h-[400px]">
+                            <!-- Geographical Heatmap Container -->
+                            <div
+                                class="flex-1 bg-surface rounded-xl border border-slate-800 p-4 flex flex-col glass-card relative overflow-hidden group">
+                                <div class="flex justify-between items-center mb-4 relative z-10">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2"><i
+                                            data-lucide="map-pin" class="w-4 h-4 text-primary"></i> Live Density Heatmap
+                                    </h3>
+                                    <div class="flex items-center gap-3 text-xs font-medium">
+                                        <span class="flex items-center gap-1"><span
+                                                class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+                                            High Impact</span>
+                                        <span class="flex items-center gap-1"><span
+                                                class="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                                            Resolved/Efficient</span>
+                                    </div>
+                                </div>
+                                <div id="heatmap-canvas"
+                                    class="flex-1 relative rounded-lg bg-[#0a101d] overflow-hidden border border-slate-800/50">
+                                    <!-- D3 or JS generated heatmap nodes will go here -->
+                                    <div
+                                        class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Layer 2: The AI Engine (Center processing feed) -->
+                            <div
+                                class="w-full xl:w-80 bg-surface rounded-xl border border-slate-800 flex flex-col glass-card overflow-hidden">
+                                <div
+                                    class="p-4 border-b border-slate-800 bg-surfaceLight/30 flex justify-between items-center">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2"><i
+                                            data-lucide="cpu" class="w-4 h-4 text-primary pulse-btn"></i> Live
+                                        Processing Feed</h3>
+                                    <span
+                                        class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold">AI
+                                        ACTIVE</span>
+                                </div>
+                                <div id="ai-processing-feed"
+                                    class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                    <!-- JS Populated AI Cards -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Layer 3: The Data Layer -->
+                        <div class="h-auto xl:h-64 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 shrink-0">
+                            <!-- Chart container -->
+                            <div
+                                class="col-span-1 lg:col-span-2 bg-surface rounded-xl border border-slate-800 p-4 glass-card flex flex-col relative overflow-hidden">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2"><i
+                                            data-lucide="bar-chart" class="w-4 h-4 text-primary"></i> Performance
+                                        Dashboard</h3>
+                                    <button id="btn-chart-toggle"
+                                        class="text-xs text-slate-400 hover:text-white hover:bg-slate-700 px-2 py-1 rounded transition">Dept
+                                        vs Dept</button>
+                                </div>
+                                <div class="flex-1 relative flex items-end gap-6 px-4 pb-2" id="chart-container">
+                                    <!-- CSS simulated bar chart comparing Jal Board and PWD -->
+                                    <div
+                                        class="chart-bar-wrap flex-1 flex flex-col justify-end items-center gap-2 group">
+                                        <div class="text-xs text-slate-400 font-bold group-hover:text-white transition">
+                                            82%</div>
+                                        <div
+                                            class="w-full bg-success/80 rounded-t-sm h-[82%] relative overflow-hidden transition-all duration-1000">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-transparent to-white/10">
+                                            </div>
+                                        </div>
+                                        <div class="text-[10px] uppercase font-bold text-slate-500">Jal Board</div>
+                                    </div>
+                                    <div
+                                        class="chart-bar-wrap flex-1 flex flex-col justify-end items-center gap-2 group">
+                                        <div
+                                            class="text-xs text-slate-400 font-bold group-hover:text-white transition gap-1 flex flex-col items-center">
+                                            <span class="text-red-400">22%</span>
+                                        </div>
+                                        <div class="w-full bg-red-500/80 rounded-t-sm h-[22%] relative overflow-hidden transition-all duration-1000"
+                                            id="pwd-bar">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-transparent to-white/10">
+                                            </div>
+                                        </div>
+                                        <div class="text-[10px] uppercase font-bold text-slate-500">PWD</div>
+                                    </div>
+
+                                    <div id="chart-overlay-modal"
+                                        class="absolute inset-0 bg-surface/95 backdrop-blur-md flex flex-col items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300 z-10">
+                                        <h4 class="text-lg font-bold text-white mb-2">Efficiency Gap Detected</h4>
+                                        <p class="text-sm text-slate-400 text-center mb-4">There is a <span
+                                                class="text-red-400 font-bold text-lg">60%</span> resolution rate gap
+                                            between DJB and PWD for equivalent severity tickets.</p>
+                                        <button id="close-chart-modal"
+                                            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded">Dismiss
+                                            Analysis</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Carbon Tracker -->
+                            <div
+                                class="bg-surface rounded-xl border border-slate-800 p-4 glass-card flex flex-col justify-between relative overflow-hidden">
+                                <!-- subtle bg glow -->
+                                <div
+                                    class="absolute -top-10 -right-10 w-32 h-32 bg-success/20 rounded-full blur-3xl pointer-events-none">
+                                </div>
+
+                                <div>
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2"><i
+                                            data-lucide="leaf" class="w-4 h-4 text-success pulse-slow"></i> Carbon
+                                        Impact Tracker</h3>
+                                    <p class="text-xs text-slate-400 mt-2">Environmental impact of optimized routing &
+                                        digital processing.</p>
+                                </div>
+
+                                <div class="mt-4">
+                                    <div class="flex items-end gap-3 mb-1">
+                                        <span class="text-4xl font-bold text-white tracking-tighter">154</span>
+                                        <span
+                                            class="text-success font-bold text-sm mb-1 pb-1 border-b border-success/30 flex items-center gap-1"><i
+                                                data-lucide="trending-up" class="w-3 h-3"></i> Top 5%</span>
+                                    </div>
+                                    <p class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Green
+                                        Resolutions Today</p>
+                                </div>
+
+                                <div class="mt-4 flex gap-2">
+                                    <div class="h-1 flex-1 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="h-full bg-success w-3/4 rounded-full relative">
+                                            <div class="absolute inset-0 glow-effect bg-white/20"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Region (Layer 1 - Citizen Interface) -->
+                    <div
+                        class="col-span-1 xl:col-span-1 bg-surface rounded-xl border border-slate-800 flex flex-col glass-card">
+                        <div
+                            class="p-4 border-b border-slate-800 bg-[#075e54]/20 flex justify-between items-center shrink-0">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center relative">
+                                    <i data-lucide="message-circle" class="w-4 h-4 text-success"></i>
+                                    <span
+                                        class="absolute top-0 right-0 w-2 h-2 bg-success rounded-full ring-2 ring-surface"></span>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white">GovBot</h3>
+                                    <p class="text-[10px] text-success font-medium">Online</p>
+                                </div>
+                            </div>
+                            <i data-lucide="more-vertical" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+
+                        <div class="flex-1 bg-[#0b141a] p-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar relative"
+                            id="whatsapp-chat">
+                            <!-- Chat BG Pattern -->
+                            <div
+                                class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-10 pointer-events-none">
+                            </div>
+
+                            <!-- Chat Bubbles -->
+                            <div class="z-10 text-center my-2">
+                                <span
+                                    class="text-[10px] bg-slate-800/80 text-slate-400 px-2 py-1 rounded-md backdrop-blur-sm">Today</span>
+                            </div>
+
+                            <!-- Citizen Message -->
+                            <div class="flex flex-col items-end z-10 animate-slide-up" style="animation-delay: 0.1s;">
+                                <div class="chat-bubble-citizen p-2 rounded-lg max-w-[85%] relative shadow-md">
+                                    <div
+                                        class="w-full h-24 bg-slate-800 rounded mb-1 flex items-center justify-center overflow-hidden relative">
+                                        <div
+                                            class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80')] bg-cover bg-center opacity-60">
+                                        </div>
+                                        <i data-lucide="image" class="w-6 h-6 text-white/50 relative z-10"></i>
+                                    </div>
+                                    <p class="text-xs text-slate-200">Huge pothole on Sector 15 main road. Needs urgent
+                                        fix! 😠</p>
+                                    <div
+                                        class="text-[9px] text-slate-400 text-right mt-1 flex justify-end items-center gap-1">
+                                        10:42 AM <i data-lucide="check-check" class="w-3 h-3 text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AI Response Processing Indicator -->
+                            <div class="flex flex-col items-start z-10" id="ai-typing">
+                                <div class="chat-bubble-ai px-3 py-2 rounded-lg max-w-[85%] relative shadow-md">
+                                    <div class="flex gap-1 items-center h-4">
+                                        <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                                        <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"
+                                            style="animation-delay: 0.2s"></span>
+                                        <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"
+                                            style="animation-delay: 0.4s"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Chat Input Mockup -->
+                        <div class="p-3 bg-surface border-t border-slate-800 flex items-center gap-3 shrink-0">
+                            <i data-lucide="plus" class="w-5 h-5 text-slate-400"></i>
+                            <div class="flex-1 bg-surfaceLight/50 rounded-full h-9 px-4 flex items-center">
+                                <span class="text-xs text-slate-500">Type a message...</span>
+                            </div>
+                            <div class="w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center">
+                                <i data-lucide="mic" class="w-4 h-4 text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB: AI Classification Feed -->
+            <div id="tab-ai-feed"
+                class="tab-pane absolute inset-0 overflow-y-auto overflow-x-hidden p-6 transition-opacity duration-300 opacity-0 pointer-events-none z-0">
+                <div class="h-full flex flex-col gap-6">
+                    <div
+                        class="bg-surface rounded-xl border border-slate-800 flex flex-col glass-card overflow-hidden flex-1">
+                        <div class="p-6 border-b border-slate-800 bg-surfaceLight/30 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i
+                                        data-lucide="activity" class="w-5 h-5 text-primary pulse-btn"></i> Full AI
+                                    Classification Log</h3>
+                                <p class="text-sm text-slate-400 mt-1">Real-time breakdown of all incoming citizen
+                                    grievances parsed by NLP.</p>
+                            </div>
+                            <span class="bg-primary/20 text-primary text-xs px-3 py-1 rounded font-bold">LIVE
+                                SYNC</span>
+                        </div>
+                        <div id="full-ai-feed" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SLA Monitor -->
+            <div id="tab-sla"
+                class="tab-pane absolute inset-0 overflow-y-auto overflow-x-hidden p-6 transition-opacity duration-300 opacity-0 pointer-events-none z-0">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    <div
+                        class="lg:col-span-2 bg-surface rounded-xl border border-slate-800 p-6 glass-card flex flex-col">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-6"><i data-lucide="clock"
+                                class="w-5 h-5 text-amber-400"></i> SLA Breach Warnings (<span
+                                class="text-red-400">Critical</span>)</h3>
+                        <div class="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                            <!-- Mock SLA Items -->
+                            <div
+                                class="p-4 border border-red-500/30 bg-red-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Ticket #5201: Water Logging Main Arterial
+                                    </h4>
+                                    <p class="text-xs text-slate-400 mt-1">Assigned to: DJB Response Team Alpha</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-red-400 font-bold text-lg">0h 42m</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wide">Until Breach</div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 border border-amber-500/30 bg-amber-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Ticket #5299: Fallen Tree Sector 4</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Assigned to: MCD Horticulture</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-amber-400 font-bold text-lg">1h 15m</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wide">Until Breach</div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 border border-slate-700 bg-surfaceLight/30 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Ticket #5310: Streetlight Outage</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Assigned to: PWD Electrical</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-success font-bold text-lg">4h 00m</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wide">Until Breach</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-surface rounded-xl border border-slate-800 p-6 glass-card flex flex-col items-center justify-center text-center">
+                        <div
+                            class="w-32 h-32 rounded-full border-4 border-success flex items-center justify-center mb-6 relative">
+                            <i data-lucide="check-circle" class="w-12 h-12 text-success"></i>
+                            <div
+                                class="absolute inset-0 rounded-full border-4 border-success border-t-transparent animate-spin">
+                            </div>
+                        </div>
+                        <h2 class="text-4xl font-bold text-white mb-2">94%</h2>
+                        <h3 class="text-lg text-slate-300 font-medium">Global SLA Adherence</h3>
+                        <p class="text-sm text-slate-500 mt-4">Up 2.4% from last month.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Department Performance -->
+            <div id="tab-performance"
+                class="tab-pane absolute inset-0 overflow-y-auto overflow-x-hidden p-6 transition-opacity duration-300 opacity-0 pointer-events-none z-0">
+                <div class="flex flex-col gap-6 h-full">
+                    <div
+                        class="bg-surface rounded-xl border border-slate-800 p-6 glass-card flex justify-between items-center shrink-0">
+                        <div>
+                            <h3 class="text-xl font-bold text-white"><i data-lucide="bar-chart-2"
+                                    class="w-6 h-6 text-primary inline-block mr-2"></i> Inter-Departmental Analysis</h3>
+                            <p class="text-sm text-slate-400 mt-1">Comparing resolution times, efficiency, and public
+                                feedback across civic bodies.</p>
+                        </div>
+                        <button id="trigger-gap-analysis"
+                            class="px-4 py-2 bg-primary/20 text-primary hover:bg-primary hover:text-white border border-primary font-bold rounded transition-colors text-sm">
+                            Run Gap Analysis
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                        <!-- Jal Board Detailed -->
+                        <div
+                            class="bg-surface rounded-xl border border-slate-800 p-6 glass-card flex flex-col relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-success"></div>
+                            <h3 class="text-lg font-bold text-white mb-6">Delhi Jal Board (DJB)</h3>
+
+                            <div class="space-y-6 flex-1">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span
+                                            class="text-slate-400">Resolution
+                                            Rate</span><span class="text-white font-bold">82%</span></div>
+                                    <div class="w-full bg-slate-800 rounded-full h-2">
+                                        <div class="bg-success h-2 rounded-full" style="width: 82%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Avg
+                                            Response
+                                            Time</span><span class="text-white font-bold">4.2 Hrs</span></div>
+                                    <div class="w-full bg-slate-800 rounded-full h-2">
+                                        <div class="bg-success h-2 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Citizen
+                                            Satisfaction</span><span class="text-white font-bold">4.6/5</span></div>
+                                    <div class="flex gap-1 text-amber-400">
+                                        <i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star"
+                                            class="w-4 h-4 fill-current"></i><i data-lucide="star"
+                                            class="w-4 h-4 fill-current"></i><i data-lucide="star"
+                                            class="w-4 h-4 fill-current"></i><i data-lucide="star-half"
+                                            class="w-4 h-4 fill-current"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PWD Detailed -->
+                        <div
+                            class="bg-surface rounded-xl border border-slate-800 p-6 glass-card flex flex-col relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-red-500 transition-all duration-1000"
+                                id="pwd-indicator-bar-tab"></div>
+                            <h3 class="text-lg font-bold text-white mb-6">Public Works Dept (PWD)</h3>
+
+                            <div class="space-y-6 flex-1">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span
+                                            class="text-slate-400">Resolution
+                                            Rate</span><span class="text-white font-bold transition-all duration-1000"
+                                            id="pwd-res-text-tab">22%</span></div>
+                                    <div class="w-full bg-slate-800 rounded-full h-2">
+                                        <div class="bg-red-500 h-2 rounded-full transition-all duration-1000"
+                                            style="width: 22%" id="pwd-res-bar-tab"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Avg
+                                            Response
+                                            Time</span><span class="text-white font-bold">48.5 Hrs</span></div>
+                                    <div class="w-full bg-slate-800 rounded-full h-2">
+                                        <div class="bg-red-500 h-2 rounded-full" style="width: 15%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Citizen
+                                            Satisfaction</span><span class="text-white font-bold">2.1/5</span></div>
+                                    <div class="flex gap-1 text-amber-400">
+                                        <i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star"
+                                            class="w-4 h-4 fill-current"></i><i data-lucide="star"
+                                            class="w-4 h-4 text-slate-700"></i><i data-lucide="star"
+                                            class="w-4 h-4 text-slate-700"></i><i data-lucide="star"
+                                            class="w-4 h-4 text-slate-700"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="tab-gap-alert-overlay"
+                                class="absolute inset-0 bg-red-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-500 z-10">
+                                <i data-lucide="alert-octagon" class="w-12 h-12 text-white mb-4 animate-bounce"></i>
+                                <h4 class="text-2xl font-bold text-white mb-2 uppercase">Critical Inefficiency</h4>
+                                <p class="text-md text-white/80 text-center">AI Diagnostics highlight a <strong
+                                        class="text-white">60%</strong> resolution dropoff in Ward 12 road maintenance
+                                    protocols.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
